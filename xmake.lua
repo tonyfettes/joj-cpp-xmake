@@ -1,10 +1,15 @@
+set_project("example_project")
+set_version("0.0.1")
+-- I'm using xmake 2.5.4 when I write this file.
+set_xmakever("2.5.4")
+
 -- There is no need to have release mode, right?
 add_rules("mode.debug", "mode.coverage", "mode.valgrind")
 
 -- dependencies for unit test
 add_requires("conan::boost-ext-ut/1.1.8")
 
--- rules to package source files as an archive to be submitted on joj
+-- rules to package source files as an archive to be submitted on JOJ
 rule("joj")
   on_package(function (target)
 
@@ -27,10 +32,10 @@ rule("joj")
     end
 
     -- Check if user passes in joj.archivedir, if not, its value fallbacks to
-    -- "uploads".
+    -- "upload".
     local archive_dir = nil
     if not target:values("joj.archivedir") then
-      archive_dir = "uploads"
+      archive_dir = "upload"
     else
       archive_dir = target:values("joj.archivedir")
     end
@@ -62,21 +67,28 @@ rule("joj")
   end)
 
   after_clean(function (target)
+
+    -- If files that needed to be uploaded are not specified, issues an error.
     assert(target:values("joj.files") ~= nil, "joj.files must be specified, e.g. add_values(\"joj.files\", \"src/main.cpp\")")
     assert(target:values("joj.format") ~= nil, "joj.format must be specified, e.g. set_values(\"joj.format\", \"zip\") ")
+
     local archive_format = target:values("joj.format")
     local archive_name = target:name() .. "." .. archive_format
     local archive_dir = nil
+
     if not target:values("joj.archivedir") then
-      archive_dir = "uploads"
+      archive_dir = "upload"
     else
       archive_dir = target:values("joj.archivedir")
     end
+
+    -- Remove packed source files after `xmake clean $(target)`.
     if os.exists(archive_dir .. "/" .. archive_name) then
       os.rm(archive_dir .. "/" .. archive_name)
     end
   end)
 
+-- Set your target name
 target("example")
   set_default(true)
   set_kind("binary")
@@ -84,7 +96,7 @@ target("example")
   -- I was to that I'm allowed to use C++11
   set_languages("cxx11")
 
-  -- This equivalent to -Wall -Wextra -Werror
+  -- This is equivalent to -Wall -Wextra -Werror
   set_warnings("allextra", "error")
 
   -- It seems that TAs will assume you run your binary under the root directory
@@ -92,12 +104,12 @@ target("example")
   set_rundir("$(projectdir)")
   add_files("src/*.cpp")
 
-  -- Enable joj package
+  -- Enable JOJ source files packaging.
   add_rules("joj")
   set_values("joj.files", "main.cpp")
   set_values("joj.format", "zip")
   set_values("joj.sourcedir", "src")
-  set_values("joj.archivedir", "uploads")
+  set_values("joj.archivedir", "upload")
 
 target("test")
   add_packages("conan::boost-ext-ut/1.1.8")
@@ -106,9 +118,10 @@ target("test")
   add_files("src/*.cpp|main.cpp", "test/main.cpp")
   add_includedirs("src")
 
-  -- generate coverage report under coverage mode
-  after_run(function (target)
-    if is_mode("coverage") then
-      os.execv("grcov", { ".", "-s", "test", "--binary-path", target:objectdir(), "-t", "html", "--branch", "--ignore-not-existing", "-o", "./coverage" })
-    end
-  end)
+  -- Umcommet to enable coverage report generation with grcov.
+  ---- generate coverage report under coverage mode
+  -- after_run(function (target)
+  --   if is_mode("coverage") then
+  --     os.execv("grcov", { ".", "-s", "test", "--binary-path", target:objectdir(), "-t", "html", "--branch", "--ignore-not-existing", "-o", "./coverage" })
+  --   end
+  -- end)
