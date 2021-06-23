@@ -1,0 +1,17 @@
+# directory for JOJ archived source files
+uploads
+
+# default build directory of xmake
+build
+
+# coverage report generate by grcov
+coverage
+
+# xmake configuration file
+.xmake
+
+# clang-format file, if you have any
+.clang-format
+
+# ClangD language server cache file
+.cache
