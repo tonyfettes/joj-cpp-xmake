@@ -106,7 +106,7 @@ target("example")
 
   -- Enable JOJ source files packaging.
   add_rules("joj")
-  set_values("joj.files", "main.cpp")
+  set_values("joj.files", "main.cpp", "greeter.h", "greeter.cpp")
   set_values("joj.format", "zip")
   set_values("joj.sourcedir", "src")
   set_values("joj.archivedir", "upload")
@@ -118,8 +118,8 @@ target("test")
   add_files("src/*.cpp|main.cpp", "test/main.cpp")
   add_includedirs("src")
 
-  -- Umcommet to enable coverage report generation with grcov.
-  ---- generate coverage report under coverage mode
+  -- Uncomment to generate coverage report.
+  -- -- generate coverage report under coverage mode
   -- after_run(function (target)
   --   if is_mode("coverage") then
   --     os.execv("grcov", { ".", "-s", "test", "--binary-path", target:objectdir(), "-t", "html", "--branch", "--ignore-not-existing", "-o", "./coverage" })

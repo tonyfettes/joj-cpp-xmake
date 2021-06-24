@@ -4,7 +4,7 @@ This template is based on xmake build system.
 
 ## Disclaimer
 
-This project is **NOT OFFICIAL**, and I'm not responsible for any possible wrongly generated code or late submission.
+This project template is **NOT OFFICIAL**, and I'm not responsible for any possible wrongly generated code or late submission.
 
 ## Project Hierarchy
 
