@@ -18,9 +18,21 @@ rule("joj")
     assert(target:values("joj.format") ~= nil, "joj.format must be specified, e.g. set_values(\"joj.format\", \"zip\")")
 
     local archive_format = target:values("joj.format")
-    local archive_name = target:name() .. "." .. archive_format
+    local archive_name = nil
+    if not target:values("joj.archive_filename_no_ext") then
+      archive_name = target:name() .. "." .. archive_format
+    else
+      archive_name = target:values("joj.archive_filename_no_ext") .. "." .. archive_format
+    end
     local archive_command = nil
     local archive_param = nil
+    local archive_dir = target:values("joj.archive_dir") or "$(projectdir)/upload"
+    local source_dir = target:values("joj.source_dir") or "$(projectdir)"
+  
+    -- If archive directory does not exist, we make it.
+    if not os.exists(archive_dir) then
+      os.mkdir(archive_dir)
+    end
 
     -- Hardcode the command name and parameters each format corresponds to
     if archive_format == "zip" then
@@ -31,15 +43,6 @@ rule("joj")
       archive_param = "-cvf"
     end
 
-    -- Check if user passes in joj.archivedir, if not, its value fallbacks to
-    -- "upload".
-    local archive_dir = nil
-    if not target:values("joj.archivedir") then
-      archive_dir = "upload"
-    else
-      archive_dir = target:values("joj.archivedir")
-    end
-
     -- Concatnating archive_command/param/name into one string
     local archive_command = archive_command .. " "
     if archive_param then
@@ -47,22 +50,16 @@ rule("joj")
     end
     archive_command = archive_command .. archive_name
 
-    -- Check if user passed in joj.sourcedir, if not, treat project root as
-    -- sourcedir.
-    if not target:values("joj.sourcedir") then
-      os.execv(archive_command, target:values("joj.files"));
-      if os.exists(archive_dir) then
-        os.mkdir(archive_dir)
-      end
-      os.mv(archive_name, archive_dir);
-    else
-      project_root = os.cd(target:values("joj.sourcedir"))
-      os.execv(archive_command, target:values("joj.files") );
-      os.cd(project_root)
-      if os.exists(archive_dir) then
-        os.mkdir(archive_dir)
-      end
-      os.mv(target:values("joj.sourcedir") .. "/" .. archive_name, archive_dir .. "/")
+    -- Go into source directory and copy files to archive directory.
+    os.cd(target:values("joj.source_dir"))
+    for _, file in ipairs(target:values("joj.files")) do
+      os.cp(file, archive_dir);
+    end
+    os.cd(archive_dir)
+    -- Archive files
+    os.execv(archive_command, target:values("joj.files"));
+    for _, file in ipairs(target:values("joj.files")) do
+      os.rm(file);
     end
   end)
 
@@ -76,10 +73,10 @@ rule("joj")
     local archive_name = target:name() .. "." .. archive_format
     local archive_dir = nil
 
-    if not target:values("joj.archivedir") then
+    if not target:values("joj.archive_dir") then
       archive_dir = "upload"
     else
-      archive_dir = target:values("joj.archivedir")
+      archive_dir = target:values("joj.archive_dir")
     end
 
     -- Remove packed source files after `xmake clean $(target)`.
@@ -108,8 +105,8 @@ target("example")
   add_rules("joj")
   set_values("joj.files", "main.cpp", "greeter.h", "greeter.cpp")
   set_values("joj.format", "zip")
-  set_values("joj.sourcedir", "src")
-  set_values("joj.archivedir", "upload")
+  set_values("joj.source_dir", "src")
+  set_values("joj.archive_dir", "upload")
 
 target("test")
   add_packages("conan::boost-ext-ut/1.1.8")
@@ -122,6 +119,6 @@ target("test")
   -- -- generate coverage report under coverage mode
   -- after_run(function (target)
   --   if is_mode("coverage") then
-  --     os.execv("grcov", { ".", "-s", "test", "--binary-path", target:objectdir(), "-t", "html", "--branch", "--ignore-not-existing", "-o", "./coverage" })
+  --     os.execv("grcov", { ".", "-s", "src", "--binary-path", target:objectdir(), "-t", "html", "--branch", "--ignore-not-existing", "-o", "./coverage" })
   --   end
   -- end)
