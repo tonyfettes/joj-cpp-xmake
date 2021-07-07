@@ -30,7 +30,8 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: Run xmake to package example
-        run: xmake package example
+        run: |
+          echo "y" | xmake package example
 
       # Runs a set of commands using the runners shell
       - name: Run zip to package example manually
