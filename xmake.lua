@@ -8,8 +8,9 @@ set_xmakever("2.5.5")
 -- There is no need to have release mode, right?
 add_rules("mode.debug", "mode.coverage", "mode.valgrind")
 
+
 -- dependencies for unit test
-add_requires("conan::boost-ext-ut/1.1.8")
+-- add_requires("conan::boost-ext-ut/1.1.8")
 
 -- Set your target name
 target("example")
@@ -34,16 +35,17 @@ target("example")
   set_values("joj.source_dir", "src")
   set_values("joj.archive_dir", "$(projectdir)/upload")
 
-target("test")
-  add_packages("conan::boost-ext-ut/1.1.8")
-  set_kind("binary")
-  set_languages("cxx20")
-  add_files("src/*.cpp|main.cpp", "test/main.cpp")
-  add_includedirs("src")
-
-  -- generate coverage report under coverage mode
-  after_run(function (target)
-    if is_mode("coverage") then
-      os.execv("grcov", { ".", "-s", "src", "--binary-path", target:objectdir(), "-t", "html", "--branch", "--ignore-not-existing", "-o", "./coverage" })
-    end
-  end)
+-- Sample unit test target
+-- target("test")
+--   add_packages("conan::boost-ext-ut/1.1.8")
+--   set_kind("binary")
+--   set_languages("cxx20")
+--   add_files("src/*.cpp|main.cpp", "test/main.cpp")
+--   add_includedirs("src")
+-- 
+--   -- generate coverage report under coverage mode
+--   after_run(function (target)
+--     if is_mode("coverage") then
+--       os.execv("grcov", { ".", "-s", "src", "--binary-path", target:objectdir(), "-t", "html", "--branch", "--ignore-not-existing", "-o", "./coverage" })
+--     end
+--   end)
