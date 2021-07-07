@@ -23,6 +23,7 @@ This project template is **NOT OFFICIAL**, and I'm not responsible for any possi
 │   └── main.cpp
 ├── upload
 │   └── example.zip
+├── joj.lua
 └── xmake.lua
 ```
 

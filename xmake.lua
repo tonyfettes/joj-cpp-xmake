@@ -42,7 +42,7 @@ target("example")
 --   set_languages("cxx20")
 --   add_files("src/*.cpp|main.cpp", "test/main.cpp")
 --   add_includedirs("src")
--- 
+--
 --   -- generate coverage report under coverage mode
 --   after_run(function (target)
 --     if is_mode("coverage") then
