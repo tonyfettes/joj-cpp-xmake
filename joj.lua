@@ -64,10 +64,41 @@ rule("joj")
 
     local archive_format = target:values("joj.format")
     local archive_name = target:name() .. "." .. archive_format
-    local archive_dir = target:values("joj.archive_dir") or "upload"
+    local archive_dir = target:values("joj.archive_dir") or "$(projectdir)/upload"
 
     -- Remove packed source files after `xmake clean $(target)`.
     if os.exists(archive_dir .. "/" .. archive_name) then
       os.rm(archive_dir .. "/" .. archive_name)
     end
   end)
+
+task("submit")
+  set_category("plugin")
+  on_run(function ()
+    import("core.project.project")
+    for _, target in pairs(project.targets()) do
+      local archive_format = target:values("joj.format")
+      local archive_name = nil
+      -- `joj.archive_filename_no_ext` is optional.
+      if not target:values("joj.archive_filename_no_ext") then
+        archive_name = target:name() .. "." .. archive_format
+      else
+        archive_name = target:values("joj.archive_filename_no_ext") .. "." .. archive_format
+      end
+      local archive_dir = target:values("joj.archive_dir") or "$(projectdir)/upload"
+      archive_name = archive_dir .. "/" .. archive_name
+
+      local problem_url = target:values("joj.problem_url")
+      assert(os.exists(archive_name), "Archive " .. archive_name .. " not found.")
+      assert(problem_url, "Problem URL not found in target settings")
+      local joj_sid = target:values("joj.sid")
+      if joj_sid ~= nil then
+        os.setenv("JOJ_SID", joj_sid)
+      end
+      os.execv("joj-submit", { problem_url, archive_name, "cc" })
+    end
+  end)
+  set_menu {
+    usage = "xmake submit",
+    description = "Submit archive to JOJ",
+  }

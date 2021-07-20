@@ -34,6 +34,10 @@ target("example")
   set_values("joj.format", "zip")
   set_values("joj.source_dir", "src")
   set_values("joj.archive_dir", "$(projectdir)/upload")
+  -- Navigate to problem webpage and copy its URL here
+  set_values("joj.problem_url", "PROBLEM URL HERE")
+  -- Obtain your JOJ SID and put it here
+  set_values("joj.sid", "YOUR SID HERE")
 
 -- Sample unit test target
 -- target("test")
